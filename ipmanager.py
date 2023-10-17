@@ -15,6 +15,7 @@ def readCsv(name, fieldnames):
         dictList = list(reader)
     return dictList[1:]
 
+
 def constructDataDict(dictlist, key1, key2, valueKeys):
     data = {}
     for item in dictlist:
@@ -60,6 +61,6 @@ else:
     print("need to specify input and output file")
 
 
-newitems = readCsv(name=input_file, fieldnames=fieldnames)
-data = constructDataDict(newitems, key1=key1, key2=key2, valueKeys=valueKeys)
-writeCsv(output_file, data, fieldnames=fieldnames, key1=key1, key2=key2)
+input_items = readCsv(name=input_file, fieldnames=fieldnames)
+input_data = constructDataDict(input_items, key1=key1, key2=key2, valueKeys=valueKeys)
+writeCsv(output_file, input_data, fieldnames=fieldnames, key1=key1, key2=key2)
