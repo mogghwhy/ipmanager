@@ -5,7 +5,8 @@ fieldnames = ['source_ip', 'dest_port', 'count']
 key1 = fieldnames[0]
 key2 = fieldnames[1]
 valueKeys = ['count']
-updateKeys = ['addedDate', '']
+addKeys = ['addedDate']
+updateKeys = ['updatedDate']
 
 def readCsv(name, fieldnames):
     dictList = None
@@ -39,8 +40,26 @@ def constructDataDict(dictlist, key1, key2, valueKeys):
                     dataLevel2[vk] = item[vk]
     return data
 
-if len(argv) == 2:
-    filename = argv[1]
-newitems = readCsv(name=filename, fieldnames=fieldnames)
+
+def writeCsv(name, dictList, fieldnames, key1, key2):
+    with open(name, 'w', newline='') as csvfile:        
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, dialect='excel')
+        writer.writeheader()
+        for k1value in dictList:
+            level1 = dictList[k1value]
+            for k2value in level1:
+                level2 = level1[k2value]                
+                row = {key1: k1value, key2: k2value} | level2
+                writer.writerow(row) 
+
+
+if len(argv) == 3:
+    input_file = argv[1]
+    output_file = argv[2]
+else:
+    print("need to specify input and output file")
+
+
+newitems = readCsv(name=input_file, fieldnames=fieldnames)
 data = constructDataDict(newitems, key1=key1, key2=key2, valueKeys=valueKeys)
-print(data)
+writeCsv(output_file, data, fieldnames=fieldnames, key1=key1, key2=key2)
