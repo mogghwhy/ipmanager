@@ -1,12 +1,14 @@
 import csv
+import json
 from sys import argv
+import datetime
 
-fieldnames = ['source_ip', 'dest_port', 'count']
-key1 = fieldnames[0]
-key2 = fieldnames[1]
-valueKeys = ['count']
-addKeys = ['addedDate']
-updateKeys = ['updatedDate']
+
+def readConfig(file):
+    with open(file, 'r', encoding='utf-8') as json_file:
+        json_data = json.load(json_file)            
+    return json_data    
+
 
 def readCsv(name, fieldnames):
     dictList = None
@@ -54,13 +56,54 @@ def writeCsv(name, dictList, fieldnames, key1, key2):
                 writer.writerow(row) 
 
 
-if len(argv) == 3:
-    input_file = argv[1]
-    output_file = argv[2]
+def updateDataDict(sourceDataDict, updateDataDict, addKeys, updateKeys, compareKeys):
+    for key1 in sourceDataDict:
+        level1 = updateDataDict.get(key1)
+        if level1 == None:
+            updateDataDict[key1] = sourceDataDict[key1]
+            level1 = updateDataDict[key1]
+            for k2 in level1:
+                for ak in addKeys:
+                    level1[k2][ak] = datetime.datetime.now(tz=datetime.timezone.utc)
+                for uk in updateKeys:
+                    level1[k2][uk] = datetime.datetime.now(tz=datetime.timezone.utc)
+        else:
+            pass
+            # level1 not None, but level2 key does not exist
+            
+            # for key2 in level1:
+            #     print(f'key2 {key2}')
+            #     level2 = level1.get(key2)
+            #     print(level2)
+            #     if level2 == None:
+            #         pass
+            #         print('not found')
+            #     else:
+            #         for ak in addKeys:
+            #             if level2.get(ak) == '':
+            #                 level2[ak] = datetime.datetime.now(tz=datetime.timezone.utc)
+            #                 for uk in updateKeys:
+            #                     if level2.get(uk) == '':
+            #                         level2[uk] = datetime.datetime.now(tz=datetime.timezone.utc)
+            #             else:
+            #                 pass
+
+
+if len(argv) == 5:
+    input_config = argv[1]
+    input_file = argv[2]
+    update_config = argv[3]
+    update_file = argv[4]
 else:
-    print("need to specify input and output file")
+    print("need to specify input and output files and their configs")
 
 
-input_items = readCsv(name=input_file, fieldnames=fieldnames)
-input_data = constructDataDict(input_items, key1=key1, key2=key2, valueKeys=valueKeys)
-writeCsv(output_file, input_data, fieldnames=fieldnames, key1=key1, key2=key2)
+input_config = readConfig(input_config)
+update_config = readConfig(update_config)
+input_items = readCsv(name=input_file, fieldnames=input_config['fieldnames'])
+input_data = constructDataDict(input_items, key1=input_config['key1'], key2=input_config['key2'], valueKeys=input_config['valueKeys'])
+update_items = readCsv(name=update_file, fieldnames=update_config['fieldnames'])
+update_data = constructDataDict(update_items, key1=update_config['key1'], key2=update_config['key2'], valueKeys=update_config['valueKeys'])
+#print(update_data)
+updateDataDict(sourceDataDict=input_data, updateDataDict=update_data, addKeys=update_config['addKeys'], updateKeys=update_config['updateKeys'], compareKeys=update_config['compareKeys'])
+writeCsv(update_file, update_data, fieldnames=update_config['fieldnames'], key1=update_config['key1'], key2=update_config['key2'])
