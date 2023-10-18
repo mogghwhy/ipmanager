@@ -57,36 +57,38 @@ def writeCsv(name, dictList, fieldnames, key1, key2):
 
 
 def updateDataDict(sourceDataDict, updateDataDict, addKeys, updateKeys, compareKeys):
-    for key1 in sourceDataDict:
-        level1 = updateDataDict.get(key1)
-        if level1 == None:
-            updateDataDict[key1] = sourceDataDict[key1]
-            level1 = updateDataDict[key1]
-            for k2 in level1:
+    for source_key1 in sourceDataDict:
+        update_level1 = updateDataDict.get(source_key1)
+        if update_level1 == None:
+            updateDataDict[source_key1] = sourceDataDict[source_key1]
+            update_level1 = updateDataDict[source_key1]
+            for k2 in update_level1:
                 for ak in addKeys:
-                    level1[k2][ak] = datetime.datetime.now(tz=datetime.timezone.utc)
+                    update_level1[k2][ak] = datetime.datetime.now(tz=datetime.timezone.utc)
                 for uk in updateKeys:
-                    level1[k2][uk] = datetime.datetime.now(tz=datetime.timezone.utc)
+                    update_level1[k2][uk] = datetime.datetime.now(tz=datetime.timezone.utc)
         else:
             pass
-            # level1 not None, but level2 key does not exist
-            
-            # for key2 in level1:
-            #     print(f'key2 {key2}')
-            #     level2 = level1.get(key2)
-            #     print(level2)
-            #     if level2 == None:
-            #         pass
-            #         print('not found')
-            #     else:
-            #         for ak in addKeys:
-            #             if level2.get(ak) == '':
-            #                 level2[ak] = datetime.datetime.now(tz=datetime.timezone.utc)
-            #                 for uk in updateKeys:
-            #                     if level2.get(uk) == '':
-            #                         level2[uk] = datetime.datetime.now(tz=datetime.timezone.utc)
-            #             else:
-            #                 pass
+            source_level1 = sourceDataDict[source_key1]
+            for source_key2 in source_level1:                
+                update_level2 = update_level1.get(source_key2)
+                if update_level2 == None:
+                    update_level1[source_key2] = source_level1[source_key2]
+                    update_level2 = update_level1[source_key2]                    
+                    for ak in addKeys:
+                        update_level2[ak] = datetime.datetime.now(tz=datetime.timezone.utc)
+                        for uk in updateKeys:
+                            update_level2[uk] = datetime.datetime.now(tz=datetime.timezone.utc)
+                else:
+                    for update_key2 in updateKeys:
+                        for compare_key in compareKeys:
+                            update_value = update_level2[compare_key]
+                            source_value = source_level1[source_key2][compare_key]
+                            if source_value != update_value:
+                                print(f'update_key2 {update_key2}')
+                                print(f'update_value {update_value}, source_value {source_value}')
+                                update_level2[compare_key] = source_value
+                                update_level2[update_key2] = datetime.datetime.now(tz=datetime.timezone.utc)
 
 
 if len(argv) == 5:
@@ -104,6 +106,5 @@ input_items = readCsv(name=input_file, fieldnames=input_config['fieldnames'])
 input_data = constructDataDict(input_items, key1=input_config['key1'], key2=input_config['key2'], valueKeys=input_config['valueKeys'])
 update_items = readCsv(name=update_file, fieldnames=update_config['fieldnames'])
 update_data = constructDataDict(update_items, key1=update_config['key1'], key2=update_config['key2'], valueKeys=update_config['valueKeys'])
-#print(update_data)
 updateDataDict(sourceDataDict=input_data, updateDataDict=update_data, addKeys=update_config['addKeys'], updateKeys=update_config['updateKeys'], compareKeys=update_config['compareKeys'])
 writeCsv(update_file, update_data, fieldnames=update_config['fieldnames'], key1=update_config['key1'], key2=update_config['key2'])
