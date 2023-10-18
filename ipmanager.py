@@ -85,8 +85,6 @@ def updateDataDict(sourceDataDict, updateDataDict, addKeys, updateKeys, compareK
                             update_value = update_level2[compare_key]
                             source_value = source_level1[source_key2][compare_key]
                             if source_value != update_value:
-                                print(f'update_key2 {update_key2}')
-                                print(f'update_value {update_value}, source_value {source_value}')
                                 update_level2[compare_key] = source_value
                                 update_level2[update_key2] = datetime.datetime.now(tz=datetime.timezone.utc)
 
